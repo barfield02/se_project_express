@@ -1,0 +1,6 @@
+const BADREQUEST = 400;
+
+const INTERNALERROR = 500;
+
+const NOTFOUND = 404;
+module.exports = { BADREQUEST, INTERNALERROR, NOTFOUND };

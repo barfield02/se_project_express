@@ -1,4 +1,5 @@
-const ClothingItem = require("..models/clothingItem");
+const ClothingItem = require("../models/clothingItem");
+const { BADREQUEST, INTERNALERROR, NOTFOUND } = require("../utils/errors");
 
 const createItem = (req, res) => {
   console.log(res);
@@ -6,13 +7,20 @@ const createItem = (req, res) => {
 
   const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageUrl })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
     })
     .catch((e) => {
-      res.status(500).send({ message: "Error from createItem", e });
+      if (e.name === "ValidationError") {
+        return res
+          .status(BADREQUEST)
+          .send({ message: "Error from createItem", e });
+      }
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "Error from createItem", e });
     });
 };
 
@@ -20,19 +28,9 @@ const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((e) => {
-      res.status(500).send({ message: "Error from getItems", e });
-    });
-};
-
-const updateItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageURL } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from getItems", e });
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "Error from getItems", e });
     });
 };
 
@@ -44,12 +42,57 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => res.status(204).send({}))
     .catch((e) => {
-      res.status(500).send({ message: "Error from deleteItem", e });
+      res.status(INTERNALERROR).send({ message: "Error from deleteItem", e });
+    });
+};
+
+const likeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => res.send({ data: item }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOTFOUND).send({ message: "Item not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BADREQUEST).send({ message: "Invaild item ID" });
+      }
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
+
+const unlikeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => res.send({ data: item }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOTFOUND).send({ message: "Item not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BADREQUEST).send({ message: "Invaild item ID" });
+      }
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 module.exports = {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
+  likeItem,
+  unlikeItem,
 };
