@@ -16,21 +16,28 @@ const createItem = (req, res) => {
       if (e.name === "ValidationError") {
         return res
           .status(BADREQUEST)
-          .send({ message: "Error from createItem", e });
+          .send({ message: "Error from createItem" });
       }
       return res
         .status(INTERNALERROR)
-        .send({ message: "Error from createItem", e });
+        .send({ message: "Error from createItem" });
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOTFOUND).send({ message: "Item not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BADREQUEST).send({ message: "Invaild item ID" });
+      }
       return res
         .status(INTERNALERROR)
-        .send({ message: "Error from getItems", e });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -40,9 +47,18 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({}))
-    .catch((e) => {
-      res.status(INTERNALERROR).send({ message: "Error from deleteItem", e });
+    .then(() => res.status(200).send({ message: "Error from deleteItem" }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOTFOUND).send({ message: "Item not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BADREQUEST).send({ message: "Invaild item ID" });
+      }
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

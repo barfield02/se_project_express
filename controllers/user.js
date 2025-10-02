@@ -31,5 +31,15 @@ const getUser = (req, res) => {
       return res.status(INTERNALERROR).send({ message: "getUser failed" });
     });
 };
+const getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.send({ data: users }))
+    .catch((err) => {
+      console.error(err);
+      return res
+        .status(INTERNALERROR)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
 
-module.exports = { createUser, getUser };
+module.exports = { createUser, getUser, getUsers };
