@@ -3,4 +3,18 @@ const BADREQUEST = 400;
 const INTERNALERROR = 500;
 
 const NOTFOUND = 404;
-module.exports = { BADREQUEST, INTERNALERROR, NOTFOUND };
+
+const CONFLICT = 409;
+
+const UNAUTHORIZED = 401;
+
+const FORBIDDEN = 403;
+
+module.exports = {
+  BADREQUEST,
+  INTERNALERROR,
+  NOTFOUND,
+  CONFLICT,
+  UNAUTHORIZED,
+  FORBIDDEN,
+};
