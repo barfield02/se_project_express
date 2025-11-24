@@ -47,3 +47,5 @@ The application provides a RESTful API for managing users and clothing items wit
 ### Testing
 
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
+
+https://www.loom.com/share/d3392ee8b9c044199c7a8d8ca3c9897c
