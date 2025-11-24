@@ -51,7 +51,7 @@ const createUser = (req, res) => {
       }
 
       // Handle other server errors
-      return res.status(500).send({
+      return res.status(INTERNALERROR).send({
         message: "An error has occurred on the server",
       });
     });
@@ -120,16 +120,14 @@ const login = (req, res) => {
   }
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      console.log(JWT_SECRET);
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       return res.send({ token });
     })
     .catch((err) => {
-      console.log(err);
       return res.status(401).send({
-        message: "The email or password is",
+        message: "The email or password is incorrect",
       });
     });
 };
