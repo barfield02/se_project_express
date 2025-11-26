@@ -7,8 +7,6 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
-  console.log(res);
-  console.log(req.body);
   const owner = req.user._id;
 
   const { name, weather, imageUrl } = req.body;
@@ -53,7 +51,7 @@ const deleteItem = (req, res) => {
         return res.status(FORBIDDEN).send({ message: "Error from deleteItem" });
       }
       return item.deleteOne().then(() => {
-        return res.status(200).send({ message: "Successful" });
+        res.status(200).send({ message: "Successful" });
       });
     })
     .catch((err) => {

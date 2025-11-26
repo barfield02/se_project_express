@@ -1,13 +1,14 @@
-const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const { JWT_SECRET } = require("../utils/config");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/config");
 
 const {
   BADREQUEST,
   INTERNALERROR,
   NOTFOUND,
   CONFLICT,
+  UNAUTHORIZED,
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
@@ -23,14 +24,12 @@ const createUser = (req, res) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => {
-      return User.create({ name, avatar, email, password: hash }).then(
-        (user) => {
-          // Remove password from response for security
-          const { password: hashedPassword, ...userWithoutPassword } =
-            user.toObject();
-          res.status(201).send({ data: userWithoutPassword });
-        }
-      );
+      User.create({ name, avatar, email, password: hash }).then((user) => {
+        // Remove password from response for security
+        const { password: hashedPassword, ...userWithoutPassword } =
+          user.toObject();
+        res.status(201).send({ data: userWithoutPassword });
+      });
     })
 
     .catch((err) => {
@@ -73,16 +72,6 @@ const getUser = (req, res) => {
       return res.status(INTERNALERROR).send({ message: "getUser failed" });
     });
 };
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(INTERNALERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
 
 const updateUser = (req, res) => {
   const userId = req.user._id;
@@ -94,7 +83,7 @@ const updateUser = (req, res) => {
   )
     .orFail()
     .then((user) => {
-      return res.send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
@@ -116,7 +105,6 @@ const login = (req, res) => {
     res.status(BADREQUEST).send({
       message: "The email and password is required",
     });
-    return;
   }
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -125,10 +113,13 @@ const login = (req, res) => {
       });
       return res.send({ token });
     })
-    .catch((err) => {
-      return res.status(401).send({
-        message: "The email or password is incorrect",
-      });
+    .catch(() => {
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "The email or password is incorrect" });
+      }
+      return res.status(INTERNALERROR);
     });
 };
-module.exports = { createUser, getUser, getUsers, login, updateUser };
+module.exports = { createUser, getUser, login, updateUser };
