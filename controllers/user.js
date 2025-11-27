@@ -23,14 +23,14 @@ const createUser = (req, res) => {
 
   bcrypt
     .hash(password, 10)
-    .then((hash) => {
+    .then((hash) =>
       User.create({ name, avatar, email, password: hash }).then((user) => {
         // Remove password from response for security
         const { password: hashedPassword, ...userWithoutPassword } =
           user.toObject();
         res.status(201).send({ data: userWithoutPassword });
-      });
-    })
+      })
+    )
 
     .catch((err) => {
       console.error(err);
@@ -113,7 +113,7 @@ const login = (req, res) => {
       });
       return res.send({ token });
     })
-    .catch(() => {
+    .catch((err) => {
       if (err.message === "Incorrect email or password") {
         return res
           .status(UNAUTHORIZED)
