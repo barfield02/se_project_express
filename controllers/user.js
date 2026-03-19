@@ -3,10 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const BadRequestError = require("../errors/bad-request-err");
-const ConflictError = require("../errors/conflict-err");
-const ForbiddenError = require("../errors/forbidden-err");
-const NotFoundError = require("../errors/not-found-err");
-const UnauthorizedError = require("../errors/unauthorized-err");
+
 const {
   BADREQUEST,
   INTERNALERROR,
@@ -15,14 +12,11 @@ const {
   UNAUTHORIZED,
 } = require("../utils/errors");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
-    res.status(BADREQUEST).send({
-      message: "The email and password is required",
-    });
-    return;
+    return next(new BadRequestError("Email and password are required"));
   }
 
   bcrypt

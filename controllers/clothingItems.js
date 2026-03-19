@@ -6,25 +6,20 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const owner = req.user._id;
 
   const { name, weather, imageUrl } = req.body;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
-      console.log(item);
       res.send({ data: item });
     })
     .catch((e) => {
       if (e.name === "ValidationError") {
-        return res
-          .status(BADREQUEST)
-          .send({ message: "Error from createItem" });
+        return next(new BADREQUEST("Invalid data"));
       }
-      return res
-        .status(INTERNALERROR)
-        .send({ message: "Error from createItem" });
+      return next(e);
     });
 };
 

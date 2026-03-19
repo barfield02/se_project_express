@@ -1,4 +1,4 @@
-const centralizedErrorHandling = (err, req, res, next) => {
+const centralizedErrorHandling = (err, req, res) => {
   console.error(err);
   if (err.statusCode) {
     return res.status(err.statusCode).send({ message: err.message });
